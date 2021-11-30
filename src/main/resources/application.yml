@@ -1,6 +1,9 @@
 spring:
   profiles:
-    - local
+    active: local
+---
+spring:
+  profiles: local
   kafka:
     producer:
       bootstrap-servers:
