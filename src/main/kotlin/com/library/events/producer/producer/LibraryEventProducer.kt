@@ -10,6 +10,8 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
 import org.springframework.stereotype.Component
 import org.springframework.util.concurrent.ListenableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 
 @Component
 @Slf4j
@@ -23,7 +25,8 @@ class LibraryEventProducer {
 
     var log: Logger = LoggerFactory.getLogger("LibraryEventProducer")
 
-    fun sendLibraryEvent(libraryEvent: LibraryEvent) {
+//    Default message sending (async)
+    fun sendLibraryEventAsync(libraryEvent: LibraryEvent) {
         val key = libraryEvent.libraryEventId
         val value = this.objectMapper.writeValueAsString(libraryEvent.book)
         val listenableFuture: ListenableFuture<SendResult<Int,String>> = kafkaTemplate.sendDefault(key, value)
@@ -31,6 +34,28 @@ class LibraryEventProducer {
             { result:SendResult<Int,String>? -> handleSuccess(key, value, result) },
             {ex: Throwable -> handleFailure(key, value, ex)}
         )
+    }
+
+//    By using .get() function, we make sure the send method is synchronous
+    fun sendLibraryEvent(libraryEvent: LibraryEvent):SendResult<Int,String>{
+        val key = libraryEvent.libraryEventId
+        val value = this.objectMapper.writeValueAsString(libraryEvent.book)
+        var sendResult: SendResult<Int, String>? = null
+        try {
+            sendResult = kafkaTemplate.sendDefault(key,value).get(1, TimeUnit.SECONDS)
+        } catch (e: Throwable ) {
+            when(e) {
+                is ExecutionException, is InterruptedException ->{
+                    log.error("ExecutionException/InterruptedException Sending the message and the exception is ${e.message}")
+                    throw e
+                }
+                is Exception -> {
+                    log.error("Exception Sending the Message and the exception is ${e.message}")
+                    throw e
+                }
+            }
+        }
+        return sendResult
     }
 
     private fun handleFailure(key: Int, value: String?, ex: Throwable) {
