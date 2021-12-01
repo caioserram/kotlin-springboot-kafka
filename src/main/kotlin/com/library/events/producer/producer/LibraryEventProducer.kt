@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.library.events.producer.domain.LibraryEvent
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
@@ -15,13 +16,12 @@ import org.springframework.util.concurrent.ListenableFuture
 class LibraryEventProducer {
 
     @Autowired
-    lateinit var kafkaTemplate: KafkaTemplate<Int, String>
+    private lateinit var kafkaTemplate: KafkaTemplate<Int, String>
 
     @Autowired
-    lateinit var objectMapper: ObjectMapper
+    private lateinit var objectMapper: ObjectMapper
 
-    @Autowired
-    lateinit var log: Logger
+    var log: Logger = LoggerFactory.getLogger("LibraryEventProducer")
 
     fun sendLibraryEvent(libraryEvent: LibraryEvent) {
         val key = libraryEvent.libraryEventId
