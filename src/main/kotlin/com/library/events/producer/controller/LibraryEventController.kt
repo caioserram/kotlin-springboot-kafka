@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(value=["/v1/libraryevent"])
-class BookEventController {
+class LibraryEventController {
 
     @Autowired
     lateinit var libraryEventProducer: LibraryEventProducer
