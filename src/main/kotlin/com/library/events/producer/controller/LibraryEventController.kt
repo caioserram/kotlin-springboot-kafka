@@ -23,6 +23,7 @@ class LibraryEventController {
     var log: Logger = LoggerFactory.getLogger("BookEventController")
 
     @PostMapping()
+//    Since we are creating a new library event, it should be NEW
     fun createBookEvent(@RequestBody libraryEvent: LibraryEvent): ResponseEntity<LibraryEvent>{
         libraryEvent.libraryEventType = LibraryEventType.NEW
         libraryEventProducer.sendLibraryEventAsyncConfiguration(libraryEvent)
