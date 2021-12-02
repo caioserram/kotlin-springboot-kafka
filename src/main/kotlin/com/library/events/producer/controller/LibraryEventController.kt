@@ -23,14 +23,7 @@ class LibraryEventController {
 
     @PostMapping()
     fun createBookEvent(@RequestBody libraryEvent: LibraryEvent): ResponseEntity<LibraryEvent>{
-        log.info("Before send library event")
-        // Due to its asynchronous behavior, method will be considered successful even though the message did not get to
-        // the broker
-//        libraryEventProducer.sendLibraryEventAsync(libraryEvent)
-//        val sendResult = libraryEventProducer.sendLibraryEvent(libraryEvent)
-//        log.info("SendResult is ${sendResult.toString()}")
         libraryEventProducer.sendLibraryEventAsyncConfiguration(libraryEvent)
-        log.info("After send library event")
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent)
     }
 }
