@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.library.events.producer.domain.LibraryEvent
 import lombok.extern.slf4j.Slf4j
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.Header
+import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,9 +75,13 @@ class LibraryEventProducer {
         )
      }
 
-    private fun buildProducerRecord(key: Int, value: String?, topic: String):ProducerRecord<Int,String> =
-        ProducerRecord(topic,null,key,value,null)
+//    Method that builds a ProducerRecord in order to further customize out message sending
+//    Maybe you might want a default header or some default behaviour to some producer calls. This is the way to go
+    private fun buildProducerRecord(key: Int, value: String?, topic: String):ProducerRecord<Int,String> {
+        val recordHeaders:List<Header> = listOf(RecordHeader("event-source","scanner".toByteArray()))
+        return ProducerRecord(topic,null,key,value,recordHeaders)
 
+    }
     private fun handleFailure(key: Int, value: String?, ex: Throwable) {
         log.error("Error sending the message for the key $key value $value and the exception is ${ex.message}")
         try{
