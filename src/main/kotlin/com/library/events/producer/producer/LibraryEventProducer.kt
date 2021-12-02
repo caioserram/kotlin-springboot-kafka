@@ -3,6 +3,7 @@ package com.library.events.producer.producer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.library.events.producer.domain.LibraryEvent
 import lombok.extern.slf4j.Slf4j
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,11 +30,12 @@ class LibraryEventProducer {
     fun sendLibraryEventAsync(libraryEvent: LibraryEvent) {
         val key = libraryEvent.libraryEventId
         val value = this.objectMapper.writeValueAsString(libraryEvent.book)
+
         val listenableFuture: ListenableFuture<SendResult<Int,String>> = kafkaTemplate.sendDefault(key, value)
-        listenableFuture.addCallback(
-            { result:SendResult<Int,String>? -> handleSuccess(key, value, result) },
-            {ex: Throwable -> handleFailure(key, value, ex)}
-        )
+            listenableFuture.addCallback(
+                { result:SendResult<Int,String>? -> handleSuccess(key, value, result) },
+                {ex: Throwable -> handleFailure(key, value, ex)}
+            )
     }
 
 //    By using .get() function, we make sure the send method is synchronous
@@ -57,6 +59,22 @@ class LibraryEventProducer {
         }
         return sendResult
     }
+
+//    Specifies sender configurations when sending message
+    fun sendLibraryEventAsyncConfiguration(libraryEvent: LibraryEvent){
+        val key = libraryEvent.libraryEventId
+        val value = this.objectMapper.writeValueAsString(libraryEvent.book)
+
+        val producerRecord: ProducerRecord<Int,String> = buildProducerRecord(key,value, "library-events")
+        val listenableFuture: ListenableFuture<SendResult<Int,String>> = kafkaTemplate.send(producerRecord)
+        listenableFuture.addCallback(
+            { result:SendResult<Int,String>? -> handleSuccess(key, value, result) },
+            {ex: Throwable -> handleFailure(key, value, ex)}
+        )
+     }
+
+    private fun buildProducerRecord(key: Int, value: String?, topic: String):ProducerRecord<Int,String> =
+        ProducerRecord(topic,null,key,value,null)
 
     private fun handleFailure(key: Int, value: String?, ex: Throwable) {
         log.error("Error sending the message for the key $key value $value and the exception is ${ex.message}")
