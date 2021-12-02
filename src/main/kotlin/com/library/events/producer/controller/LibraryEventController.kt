@@ -1,6 +1,7 @@
 package com.library.events.producer.controller
 
 import com.library.events.producer.domain.LibraryEvent
+import com.library.events.producer.domain.LibraryEventType
 import com.library.events.producer.producer.LibraryEventProducer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,6 +24,7 @@ class LibraryEventController {
 
     @PostMapping()
     fun createBookEvent(@RequestBody libraryEvent: LibraryEvent): ResponseEntity<LibraryEvent>{
+        libraryEvent.libraryEventType = LibraryEventType.NEW
         libraryEventProducer.sendLibraryEventAsyncConfiguration(libraryEvent)
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent)
     }
