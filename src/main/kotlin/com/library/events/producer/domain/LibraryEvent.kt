@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor
 data class LibraryEvent(
     val libraryEventId: Int,
     val book: Book,
-    var libraryEventType: LibraryEventType
+    var libraryEventType: LibraryEventType?
 )
